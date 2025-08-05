@@ -2,7 +2,7 @@
   "name": "watch-widget",
   "displayName": "Watch Widget",
   "description": "Simple watch widget to run npm run watch from folder context menu",
-  "version": "2.0.20",
+  "version": "2.0.28",
   "publisher": "Hydra",
   "license": "MIT",
   "author": "Pratik Bali",
@@ -12,7 +12,11 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:watchWidget.watchWidget",
+    "onCommand:watchWidget.moreScripts",
+    "onCommand:watchWidget.refreshScripts"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -21,8 +25,17 @@
         "title": "$(play) Watch Widget"
       },
       {
-        "command": "watchWidget.configureScripts",
-        "title": "$(gear) Configure Scripts"
+        "command": "watchWidget.build",
+        "title": "$(gear) Build"
+      },
+      {
+        "command": "watchWidget.defaultWatch",
+        "title": "$(eye) Watch"
+      },
+      {
+        "command": "watchWidget.moreScripts",
+        "title": "$(list-unordered) More Scripts",
+        "category": "More Scripts"
       }
     ],
     "menus": {
@@ -33,12 +46,36 @@
           "group": "1_custom@1"
         },
         {
-          "command": "watchWidget.configureScripts",
+          "submenu": "watchWidget.moreScriptsSubmenu",
           "when": "explorerResourceIsFolder",
           "group": "1_custom@2"
         }
+      ],
+      "watchWidget.moreScriptsSubmenu": [
+        {
+          "command": "watchWidget.build",
+          "when": "explorerResourceIsFolder",
+          "group": "a@1"
+        },
+        {
+          "command": "watchWidget.defaultWatch",
+          "when": "explorerResourceIsFolder",
+          "group": "a@2"
+        },
+        {
+          "command": "watchWidget.refreshScripts",
+          "when": "explorerResourceIsFolder",
+          "group": "z_refresh@1"
+        }
       ]
-    }
+    },
+    "submenus": [
+      {
+        "id": "watchWidget.moreScriptsSubmenu",
+        "label": "More Scripts",
+        "icon": "$(list-unordered)"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
