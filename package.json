@@ -2,7 +2,7 @@
   "name": "watch-widget",
   "displayName": "Watch Widget",
   "description": "Simple watch widget to run npm run watch from folder context menu",
-  "version": "2.0.16",
+  "version": "2.0.20",
   "publisher": "Hydra",
   "license": "MIT",
   "author": "Pratik Bali",
@@ -49,7 +49,7 @@
     "version:patch": "npm version patch --no-git-tag-version",
     "package": "npm run clean-vsix && npm run clean && npm run version:patch && npm run compile && vsce package",
     "package-only": "npm run clean-vsix && npm run clean && npm run compile && vsce package",
-    "install-local": "code --install-extension *.vsix --force || echo Extension installed with warnings",
+    "install-local": "for /f %i in ('node -p \"require('./package.json').version\"') do code --install-extension watch-widget-%i.vsix --force",
     "all": "npm run package && npm run install-local"
   },
   "devDependencies": {
