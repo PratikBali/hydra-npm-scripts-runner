@@ -2,7 +2,7 @@
   "name": "watch-widget",
   "displayName": "Watch Widget",
   "description": "Simple watch widget to run npm run watch from folder context menu",
-  "version": "2.0.10",
+  "version": "2.0.12",
   "publisher": "Hydra",
   "license": "MIT",
   "author": "Pratik Bali",
@@ -45,9 +45,10 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "clean": "if exist out rmdir /S /Q out && mkdir out || echo Cleaned output directory",
+    "clean-vsix": "del *.vsix 2>nul || echo No VSIX files to delete",
     "version:patch": "npm version patch --no-git-tag-version",
-    "package": "npm run clean && npm run version:patch && npm run compile && vsce package",
-    "package-only": "npm run clean && npm run compile && vsce package",
+    "package": "npm run clean-vsix && npm run clean && npm run version:patch && npm run compile && vsce package",
+    "package-only": "npm run clean-vsix && npm run clean && npm run compile && vsce package",
     "install-local": "code --install-extension *.vsix --force || echo Extension installed with warnings"
   },
   "devDependencies": {
