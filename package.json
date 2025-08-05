@@ -1,0 +1,69 @@
+{
+  "name": "watch-widget",
+  "displayName": "Watch Widget",
+  "description": "Simple watch widget to run npm run watch from folder context menu",
+  "version": "2.0.10",
+  "publisher": "Hydra",
+  "license": "MIT",
+  "author": "Pratik Bali",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "watchWidget.watchWidget",
+        "title": "$(play) Watch Widget"
+      },
+      {
+        "command": "watchWidget.configureScripts",
+        "title": "$(gear) Configure Scripts"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "watchWidget.watchWidget",
+          "when": "explorerResourceIsFolder",
+          "group": "1_custom@1"
+        },
+        {
+          "command": "watchWidget.configureScripts",
+          "when": "explorerResourceIsFolder",
+          "group": "1_custom@2"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "clean": "if exist out rmdir /S /Q out && mkdir out || echo Cleaned output directory",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "package": "npm run clean && npm run version:patch && npm run compile && vsce package",
+    "package-only": "npm run clean && npm run compile && vsce package",
+    "install-local": "code --install-extension *.vsix --force || echo Extension installed with warnings"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/watch-widget"
+  },
+  "keywords": [
+    "watch",
+    "folder",
+    "npm",
+    "development",
+    "terminal"
+  ]
+}
