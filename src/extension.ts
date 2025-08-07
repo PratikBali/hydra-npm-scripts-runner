@@ -69,42 +69,48 @@ export function activate(context: vscode.ExtensionContext) {
         // Create a truly unique task identifier using multiple unique factors
         const timestamp = Date.now();
         const randomId = Math.random().toString(36).substring(2, 11);
-        const uniqueId = `${timestamp}-${randomId}`;
+        const uniqueId = `${folderName}-${scriptName}-${timestamp}-${randomId}`;
         
         // Create a completely unique task definition that VS Code won't match with existing tasks
         const task = new vscode.Task(
             { 
-                type: 'npm',  // Changed to npm type for better recognition
+                type: 'hydra-npm-script', // Custom type to ensure uniqueness
+                task: uniqueId,  // Use unique ID as the task identifier
                 script: scriptName,
+                folder: folderName,
                 path: folderPath,
-                uniqueId: uniqueId,  // This makes each task completely unique
                 timestamp: timestamp
             },
             vscode.TaskScope.Workspace,
-            `${scriptName}`,  // Simple name for the loading animation
-            'npm',  // Changed source to npm for proper loading animation
+            `${folderName} - ${scriptName}`,
+            'Hydra Npm Scripts Runner',
             new vscode.ShellExecution(`npm run ${scriptName}`, { cwd: folderPath })
         );
         
-        // Configure task presentation for proper loading animation and concurrency
-        task.group = vscode.TaskGroup.Build;
+        // Configure task presentation for proper loading animation and parallel execution
         task.presentationOptions = {
             echo: true,
-            reveal: vscode.TaskRevealKind.Always,
-            focus: false,
-            panel: vscode.TaskPanelKind.New,  // Each task gets its own terminal
-            clear: false,
-            showReuseMessage: false
+            reveal: vscode.TaskRevealKind.Always,  // Always show the terminal
+            focus: false,  // Don't steal focus from current terminal
+            panel: vscode.TaskPanelKind.New,  // Each task gets its own terminal for parallel execution
+            clear: false,  // Don't clear terminal content
+            showReuseMessage: false  // Don't show reuse message
         };
         
-        // Mark as background task to get the loading animation
-        task.isBackground = true;
+        // Set as background task to enable loading indicators and parallel execution
+        task.isBackground = false;  // Keep as foreground to show loading properly
         
-        // Add problem matcher to detect when the task starts and stops (for loading animation)
+        // Remove problem matchers to let the task run with proper loading animation
         task.problemMatchers = [];
         
-        await vscode.tasks.executeTask(task);
-        vscode.window.showInformationMessage(`Started '${scriptName}' in ${folderName}`);
+        try {
+            await vscode.tasks.executeTask(task);
+            vscode.window.showInformationMessage(`✅ Started '${scriptName}' in ${folderName}`);
+            console.log(`Task started successfully: ${folderName} - ${scriptName}`);
+        } catch (error) {
+            console.error(`Failed to start task: ${folderName} - ${scriptName}`, error);
+            vscode.window.showErrorMessage(`❌ Failed to start '${scriptName}' in ${folderName}: ${error}`);
+        }
     }
 
     // Helper function to refresh dynamic script commands
@@ -132,67 +138,91 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the main watch widget command
     const watchWidgetCommand = vscode.commands.registerCommand('watchWidget.watchWidget', async (uri: vscode.Uri) => {
-        if (uri?.fsPath) {
-            const scripts = readPackageJsonScripts(uri.fsPath);
-            if (scripts['watch']) {
-                await runScript(uri.fsPath, 'watch', scripts);
-            } else {
-                vscode.window.showErrorMessage('No "watch" script found in package.json');
-            }
-        } else {
-            vscode.window.showErrorMessage('Please select a folder to run Hydra Npm Scripts Runner');
+        if (!uri?.fsPath) {
+            vscode.window.showErrorMessage('❌ Please select a folder to run Watch Widget');
+            return;
         }
+
+        const folderName = path.basename(uri.fsPath);
+        const scripts = readPackageJsonScripts(uri.fsPath);
+        
+        if (!scripts['watch']) {
+            vscode.window.showErrorMessage(`❌ No "watch" script found in package.json for ${folderName}`);
+            return;
+        }
+
+        console.log(`Starting Watch Widget for folder: ${folderName} (${uri.fsPath})`);
+        await runScript(uri.fsPath, 'watch', scripts);
     });
 
     // Register the build command
     const buildCommand = vscode.commands.registerCommand('watchWidget.build', async (uri: vscode.Uri) => {
-        if (uri?.fsPath) {
-            const scripts = readPackageJsonScripts(uri.fsPath);
-            if (scripts['build']) {
-                await runScript(uri.fsPath, 'build', scripts);
-            } else {
-                vscode.window.showErrorMessage('No "build" script found in package.json');
-            }
-        } else {
-            vscode.window.showErrorMessage('Please select a folder');
+        if (!uri?.fsPath) {
+            vscode.window.showErrorMessage('❌ Please select a folder to run Build');
+            return;
         }
+
+        const folderName = path.basename(uri.fsPath);
+        const scripts = readPackageJsonScripts(uri.fsPath);
+        
+        if (!scripts['build']) {
+            vscode.window.showErrorMessage(`❌ No "build" script found in package.json for ${folderName}`);
+            return;
+        }
+
+        console.log(`Starting Build for folder: ${folderName} (${uri.fsPath})`);
+        await runScript(uri.fsPath, 'build', scripts);
     });
 
     // Register the default watch command
     const defaultWatchCommand = vscode.commands.registerCommand('watchWidget.defaultWatch', async (uri: vscode.Uri) => {
-        if (uri?.fsPath) {
-            const scripts = readPackageJsonScripts(uri.fsPath);
-            if (scripts['watch']) {
-                await runScript(uri.fsPath, 'watch', scripts);
-            } else {
-                vscode.window.showErrorMessage('No "watch" script found in package.json');
-            }
-        } else {
-            vscode.window.showErrorMessage('Please select a folder');
+        if (!uri?.fsPath) {
+            vscode.window.showErrorMessage('❌ Please select a folder to run Watch');
+            return;
         }
+
+        const folderName = path.basename(uri.fsPath);
+        const scripts = readPackageJsonScripts(uri.fsPath);
+        
+        if (!scripts['watch']) {
+            vscode.window.showErrorMessage(`❌ No "watch" script found in package.json for ${folderName}`);
+            return;
+        }
+
+        console.log(`Starting Watch for folder: ${folderName} (${uri.fsPath})`);
+        await runScript(uri.fsPath, 'watch', scripts);
     });
 
     // Register the more scripts command to show a Quick Pick of all scripts
     const moreScriptsCommand = vscode.commands.registerCommand('watchWidget.moreScripts', async (uri: vscode.Uri) => {
         if (!uri?.fsPath) {
-            vscode.window.showErrorMessage('Please select a folder to view scripts');
+            vscode.window.showErrorMessage('❌ Please select a folder to view scripts');
             return;
         }
 
+        const folderName = path.basename(uri.fsPath);
         const scripts = readPackageJsonScripts(uri.fsPath);
         const scriptNames = Object.keys(scripts);
 
         if (scriptNames.length === 0) {
-            vscode.window.showInformationMessage('No scripts found in package.json');
+            vscode.window.showInformationMessage(`ℹ️ No scripts found in package.json for ${folderName}`);
             return;
         }
 
         const selected = await vscode.window.showQuickPick(
-            scriptNames.map(s => ({ label: s, description: scripts[s] })),
-            { placeHolder: 'Select an npm script to run' }
+            scriptNames.map(s => ({ 
+                label: s, 
+                description: scripts[s],
+                detail: `Run in ${folderName}`
+            })),
+            { 
+                placeHolder: `Select an npm script to run in ${folderName}`,
+                title: `${folderName} - NPM Scripts`
+            }
         );
 
         if (selected) {
+            console.log(`Starting script '${selected.label}' for folder: ${folderName} (${uri.fsPath})`);
             await runScript(uri.fsPath, selected.label, scripts);
         }
     });

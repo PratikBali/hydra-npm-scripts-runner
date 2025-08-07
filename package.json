@@ -2,7 +2,7 @@
   "name": "hydra-npm-scripts-runner",
   "displayName": "Hydra Npm Scripts Runner",
   "description": "Run, build, and watch npm scripts from the folder context menu.",
-  "version": "2.0.37",
+  "version": "2.0.42",
   "publisher": "Hydra",
   "license": "MIT",
   "author": "Pratik Bali",
